@@ -65,7 +65,6 @@ namespace AutoIdle
             CheckAutoBuy();
             AutoLayout();
             LevelUpHighestDPS();
-            
         }
 
         public void OnGUI()
@@ -120,22 +119,16 @@ namespace AutoIdle
             if (show)
             {
                 scrollViewVector = GUI.BeginScrollView(new Rect((dropDownRect.x - 100), (dropDownRect.y + 25), dropDownRect.width, dropDownRect.height), scrollViewVector, new Rect(0, 0, dropDownRect.width, Mathf.Max(dropDownRect.height, (TierSelection.Length * 25))));
-
                 GUI.Box(new Rect(0, 0, dropDownRect.width, Mathf.Max(dropDownRect.height, (TierSelection.Length * 25))), "");
-
                 for (int index = 0; index < TierSelection.Length; index++)
                 {
-
                     if (GUI.Button(new Rect(0, (index * 25), dropDownRect.height, 25), ""))
                     {
                         show = false;
                         SelectedTier = index;
                     }
-
                     GUI.Label(new Rect(5, (index * 25), dropDownRect.height, 25), TierSelection[index]);
-
                 }
-
                 GUI.EndScrollView();
             }
             else
@@ -151,21 +144,6 @@ namespace AutoIdle
             GUI.Label(new Rect(information.x, information.y + 40, windowRect.width - 20, 25), "Next Chest Reward: " + nextFlyingChestReward);
             GUI.Label(new Rect(information.x, information.y + 60, windowRect.width - 20, 25), "Prestiges Done: " + prestigeCounter.ToString());
             GUI.Label(new Rect(information.x, information.y + 80, windowRect.width - 20, 25), "Times leveled: " + LevelCounter);
-
-            if (GUI.Button(new Rect(information.x, information.y + 165, windowRect.width - 20, 25), "Do it!"))
-            {
-                double num = GameManager.Instance.baseEnemyHp;
-                num *= (double)(1f - (float)GameManager.Instance.resLvlEnemyHp * 0.02f);
-                num *= (double)(1f - (float)GameManager.Instance.artEnemyHp * 0.05f);
-                num *= (double)(1f - (float)GameManager.Instance.relicEnemyHp * 0.02f);
-                num *= (double)(1f - (float)GameManager.Instance.tournEnemyHp * 0.02f);
-                num = Math.Round(num, 0);
-                double num2 = currHighestDps;
-                if (num * 2 > num2)
-                {
-                    
-                }
-            }
             GUI.DragWindow(new Rect(0, 0, 10000, 200));
         }
 
@@ -190,7 +168,6 @@ namespace AutoIdle
                 for (int i = 0; i < TowerManager.Instance.usePlacements.Count; i++)
                 {
                     Tower thisTower = TowerManager.Instance.usePlacements[i].thisTower;
-
                     if (thisTower.getDps(true, false, thisTower.baseDps, thisTower.milestoneBonus) > highestDps)
                     {
                         highestDps = thisTower.getDps(true, false, thisTower.baseDps, thisTower.milestoneBonus);
@@ -271,7 +248,6 @@ namespace AutoIdle
                             WaitAfterPrestige = 6.0f;
                         }
                     }
-
                 }
                 else if (GameManager.Instance.mPrestigesLevel < 3)
                 {
@@ -293,7 +269,6 @@ namespace AutoIdle
                         WaitAfterPrestige = 6.0f;
                     }
                 }
-                
             }
         }
 
@@ -329,11 +304,9 @@ namespace AutoIdle
                     case 6:
                         nextFlyingChestReward = "Gems";
                         break;
-
                 }
                 currentReward = GameManager.Instance.videoAdRotation;
             }
-
         }
 
         public void AutoLayout()
@@ -503,7 +476,6 @@ namespace AutoIdle
                         }
                     }
                     break;
-
             }
             monstersNewPanel.newCardPanel.gameObject.SetActive(false);
             monstersNewPanel.newCardMultiPanel.gameObject.SetActive(false);
