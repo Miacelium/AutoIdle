@@ -37,6 +37,7 @@ namespace AutoIdle
         public int currentReward = GameManager.Instance.videoAdRotation;
         public int LevelCounter = 0;
         public double currHighestDps;
+        public string lastBought;
 
         public void Start()
         {
@@ -45,7 +46,6 @@ namespace AutoIdle
 
         public void Update()
         {
-            
             Cursor.visible = true;
             if (Input.GetKeyDown(KeyCode.U))
             {
@@ -65,6 +65,7 @@ namespace AutoIdle
             CheckAutoBuy();
             AutoLayout();
             LevelUpHighestDPS();
+            AutoCargoShip();
         }
 
         public void OnGUI()
@@ -135,6 +136,7 @@ namespace AutoIdle
             {
                 GUI.Label(new Rect((dropDownRect.x - 95), dropDownRect.y, 300, 25), TierSelection[SelectedTier]);
             }
+            BuyOnlyNeededToggle = GUI.Toggle(new Rect(settings.x, settings.y + 175, windowRect.width - 20, 20), BuyOnlyNeededToggle, "Only Buy Monster For Daily");
             AutoClickFlyingChest = GUI.Toggle(new Rect(settings.x, settings.y + 195, windowRect.width - 20, 20), AutoClickFlyingChest, "Auto Click Flying Chest");
             AutoLevelTwoTowersToggle = GUI.Toggle(new Rect(settings.x, settings.y + 215, windowRect.width - 20, 20), AutoLevelTwoTowersToggle, "Auto Level Two Towers");
             AutoCargoShipToggle = GUI.Toggle(new Rect(settings.x, settings.y + 235, windowRect.width - 20, 20), AutoCargoShipToggle, "Auto Cargo Ship");
@@ -144,6 +146,7 @@ namespace AutoIdle
             GUI.Label(new Rect(information.x, information.y + 40, windowRect.width - 20, 25), "Next Chest Reward: " + nextFlyingChestReward);
             GUI.Label(new Rect(information.x, information.y + 60, windowRect.width - 20, 25), "Prestiges Done: " + prestigeCounter.ToString());
             GUI.Label(new Rect(information.x, information.y + 80, windowRect.width - 20, 25), "Times leveled: " + LevelCounter);
+            GUI.Label(new Rect(information.x, information.y + 100, windowRect.width - 20, 25), "Last Bought: " + lastBought);
             GUI.DragWindow(new Rect(0, 0, 10000, 200));
         }
 
@@ -185,7 +188,16 @@ namespace AutoIdle
                         secondTower = thisTower;
                     }
                 }
-                if (secondTower.levelCost < GameManager.Instance.resGoldObs)
+                double secondTowerCost;
+                if (secondTower.level + 1 != secondTower.milestoneLevel * 25)
+                {
+                    secondTowerCost = secondTower.levelCost;
+                }
+                else
+                {
+                    secondTowerCost = 5.0 * secondTower.levelCost;
+                }
+                if (secondTowerCost < GameManager.Instance.resGoldObs)
                 {
                     TowerManager.Instance.selectedTower = secondTower;
                     TowerManager.Instance.selectedTowerPanel.SetActive(true);
@@ -195,7 +207,16 @@ namespace AutoIdle
                     TowerManager.Instance.selectedTower = null;
                     LevelCounter++;
                 }
-                if (highestDpsTower.levelCost < GameManager.Instance.resGoldObs)
+                double highestDpsTowerCost;
+                if (highestDpsTower.level + 1 != highestDpsTower.milestoneLevel * 25)
+                {
+                    highestDpsTowerCost = highestDpsTower.levelCost;
+                }
+                else
+                {
+                    highestDpsTowerCost = 5.0 * highestDpsTower.levelCost;
+                }
+                if (highestDpsTowerCost < GameManager.Instance.resGoldObs)
                 {
                     TowerManager.Instance.selectedTower = highestDpsTower;
                     TowerManager.Instance.selectedTowerPanel.SetActive(true);
@@ -359,6 +380,7 @@ namespace AutoIdle
                         if (GameManager.Instance.achHighestWave >= 0)
                         {
                             monstersNewPanel.buyMonster(1);
+                            lastBought = amount + "x Tier 1";
                         }
                     }
                     break;
@@ -371,14 +393,19 @@ namespace AutoIdle
                             amount = 100 - GameManager.Instance.mMultiCardsValue;
                         }
                     }
-                    if (amount > 0)
+                    if (GameManager.Instance.achHighestWave >= 40)
                     {
-                        Reflection.SetField(monstersNewPanel, "JJLHDEGJPDH", 15 * amount);
-                        Reflection.SetField(monstersNewPanel, "JLHCNIAKJFK", amount);
-                        if (GameManager.Instance.achHighestWave >= 40)
+                        if (amount > 0)
                         {
+                            Reflection.SetField(monstersNewPanel, "JJLHDEGJPDH", 15 * amount);
+                            Reflection.SetField(monstersNewPanel, "JLHCNIAKJFK", amount);
                             monstersNewPanel.buyMonster(2);
+                            lastBought = amount + "x Tier 2";
                         }
+                    }
+                    else
+                    {
+                        goto case 0;
                     }
                     break;
                 case 2:
@@ -390,14 +417,19 @@ namespace AutoIdle
                             amount = 100 - GameManager.Instance.mMultiCardsValue;
                         }
                     }
-                    if (amount > 0)
+                    if (GameManager.Instance.achHighestWave >= 120)
                     {
-                        Reflection.SetField(monstersNewPanel, "AKBJOBIKFOI", 25 * amount);
-                        Reflection.SetField(monstersNewPanel, "JLHCNIAKJFK", amount);
-                        if (GameManager.Instance.achHighestWave >= 120)
+                        if (amount > 0)
                         {
+                            Reflection.SetField(monstersNewPanel, "AKBJOBIKFOI", 25 * amount);
+                            Reflection.SetField(monstersNewPanel, "JLHCNIAKJFK", amount);
                             monstersNewPanel.buyMonster(3);
+                            lastBought = amount + "x Tier 3";
                         }
+                    }
+                    else
+                    {
+                        goto case 1;
                     }
                     break;
                 case 3:
@@ -409,14 +441,20 @@ namespace AutoIdle
                             amount = 100 - GameManager.Instance.mMultiCardsValue;
                         }
                     }
-                    if (amount > 0)
+                    if (GameManager.Instance.achHighestWave >= 250)
                     {
-                        Reflection.SetField(monstersNewPanel, "GKLHPKIKMEO", 40 * amount);
-                        Reflection.SetField(monstersNewPanel, "JLHCNIAKJFK", amount);
-                        if (GameManager.Instance.achHighestWave >= 250)
+
+                        if (amount > 0)
                         {
+                            Reflection.SetField(monstersNewPanel, "GKLHPKIKMEO", 40 * amount);
+                            Reflection.SetField(monstersNewPanel, "JLHCNIAKJFK", amount);
                             monstersNewPanel.buyMonster(4);
+                            lastBought = amount + "x Tier 4";
                         }
+                    }
+                    else
+                    {
+                        goto case 2;
                     }
                     break;
                 case 4:
@@ -428,14 +466,19 @@ namespace AutoIdle
                             amount = 100 - GameManager.Instance.mMultiCardsValue;
                         }
                     }
-                    if (amount > 0)
+                    if (GameManager.Instance.achHighestWave >= 500)
                     {
-                        Reflection.SetField(monstersNewPanel, "NIKFNINBCJC", 70 * amount);
-                        Reflection.SetField(monstersNewPanel, "JLHCNIAKJFK", amount);
-                        if (GameManager.Instance.achHighestWave >= 500)
+                        if (amount > 0)
                         {
+                            Reflection.SetField(monstersNewPanel, "NIKFNINBCJC", 70 * amount);
+                            Reflection.SetField(monstersNewPanel, "JLHCNIAKJFK", amount);
                             monstersNewPanel.buyMonster(5);
+                            lastBought = amount + "x Tier 5";
                         }
+                    }
+                    else
+                    {
+                        goto case 3;
                     }
                     break;
                 case 5:
@@ -447,14 +490,18 @@ namespace AutoIdle
                             amount = 100 - GameManager.Instance.mMultiCardsValue;
                         }
                     }
-                    if (amount > 0)
-                    {
-                        Reflection.SetField(monstersNewPanel, "MKOOAPHPNJJ", 125 * amount);
-                        Reflection.SetField(monstersNewPanel, "JLHCNIAKJFK", amount);
-                        if (GameManager.Instance.achHighestWave >= 800)
+                    if (GameManager.Instance.achHighestWave >= 800) {
+                        if (amount > 0)
                         {
+                            Reflection.SetField(monstersNewPanel, "MKOOAPHPNJJ", 125 * amount);
+                            Reflection.SetField(monstersNewPanel, "JLHCNIAKJFK", amount);
                             monstersNewPanel.buyMonster(6);
+                            lastBought = amount + "x Tier 6";
                         }
+                    }
+                    else
+                    {
+                        goto case 4;
                     }
                     break;
                 case 6:
@@ -466,14 +513,19 @@ namespace AutoIdle
                             amount = 100 - GameManager.Instance.mMultiCardsValue;
                         }
                     }
-                    if (amount > 0)
+                    if (GameManager.Instance.achHighestWave >= 1500)
                     {
-                        Reflection.SetField(monstersNewPanel, "FHLFLCEGENP", 250 * amount);
-                        Reflection.SetField(monstersNewPanel, "JLHCNIAKJFK", amount);
-                        if (GameManager.Instance.achHighestWave >= 1500)
+                        if (amount > 0)
                         {
+                            Reflection.SetField(monstersNewPanel, "FHLFLCEGENP", 250 * amount);
+                            Reflection.SetField(monstersNewPanel, "JLHCNIAKJFK", amount);
                             monstersNewPanel.buyMonster(7);
+                            lastBought = amount + "x Tier 7";
                         }
+                    }
+                    else
+                    {
+                        goto case 5;
                     }
                     break;
             }
