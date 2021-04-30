@@ -35,16 +35,14 @@ namespace AutoIdle
         // Info Variables
         public float WaitAfterPrestige;
         public int currentReward = GameManager.Instance.videoAdRotation;
-        public string test1;
         public int LevelCounter = 0;
-        public string test2;
-        public string test3;
-        public string test4;
         public double currHighestDps;
+
         public void Start()
         {
             GetNextFlyingChestReward();
         }
+
         public void Update()
         {
             
@@ -69,6 +67,7 @@ namespace AutoIdle
             LevelUpHighestDPS();
             
         }
+
         public void OnGUI()
         {
             GUI.backgroundColor = Color.black;
@@ -152,9 +151,6 @@ namespace AutoIdle
             GUI.Label(new Rect(information.x, information.y + 40, windowRect.width - 20, 25), "Next Chest Reward: " + nextFlyingChestReward);
             GUI.Label(new Rect(information.x, information.y + 60, windowRect.width - 20, 25), "Prestiges Done: " + prestigeCounter.ToString());
             GUI.Label(new Rect(information.x, information.y + 80, windowRect.width - 20, 25), "Times leveled: " + LevelCounter);
-            GUI.Label(new Rect(information.x, information.y + 100, windowRect.width - 20, 25), test1);
-            GUI.Label(new Rect(information.x, information.y + 120, windowRect.width - 20, 25), test3);
-            GUI.Label(new Rect(information.x, information.y + 140, windowRect.width - 20, 25), test4);
 
             if (GUI.Button(new Rect(information.x, information.y + 165, windowRect.width - 20, 25), "Do it!"))
             {
@@ -172,6 +168,7 @@ namespace AutoIdle
             }
             GUI.DragWindow(new Rect(0, 0, 10000, 200));
         }
+
         public void CheckDroneSwarm()
         {
             if (AutoDroneSwarmToggle)
@@ -182,6 +179,7 @@ namespace AutoIdle
                 }
             }
         }
+
         public void LevelUpHighestDPS()
         {
             if (AutoLevelTwoTowersToggle)
@@ -232,6 +230,7 @@ namespace AutoIdle
                 }
             }
         }
+
         public void ClickFlyingChest()
         {
             if (AutoClickFlyingChest)
@@ -248,56 +247,56 @@ namespace AutoIdle
             }
 
         }
+
         public void CheckPrestige()
         {
-            if (AutoPrestigeToggle)
+            if (AutoPrestigeToggle && GameManager.Instance.currHighestWave >= GameManager.Instance.prestigeReqWave)
             {
-                if (GameManager.Instance.currHighestWave >= GameManager.Instance.prestigeReqWave)
+                if (FastPrestigeToggle)
                 {
-                    if (FastPrestigeToggle)
+                    double num = GameManager.Instance.baseEnemyHp;
+                    num *= (double)(1f - (float)GameManager.Instance.resLvlEnemyHp * 0.02f);
+                    num *= (double)(1f - (float)GameManager.Instance.artEnemyHp * 0.05f);
+                    num *= (double)(1f - (float)GameManager.Instance.relicEnemyHp * 0.02f);
+                    num *= (double)(1f - (float)GameManager.Instance.tournEnemyHp * 0.02f);
+                    num = Math.Round(num, 0);
+                    double num2 = currHighestDps;
+                    if (num * 2 > num2 || GameManager.Instance.statCurrRunWavesFailed > 0)
                     {
-                        double num = GameManager.Instance.baseEnemyHp;
-                        num *= (double)(1f - (float)GameManager.Instance.resLvlEnemyHp * 0.02f);
-                        num *= (double)(1f - (float)GameManager.Instance.artEnemyHp * 0.05f);
-                        num *= (double)(1f - (float)GameManager.Instance.relicEnemyHp * 0.02f);
-                        num *= (double)(1f - (float)GameManager.Instance.tournEnemyHp * 0.02f);
-                        num = Math.Round(num, 0);
-                        double num2 = currHighestDps;
-                        if (num * 2 > num2 || GameManager.Instance.statCurrRunWavesFailed > 0)
+                        WaitAfterPrestige -= Time.deltaTime;
+                        if (WaitAfterPrestige <= 0.0f)
                         {
-                            WaitAfterPrestige -= Time.deltaTime;
-                            if (WaitAfterPrestige <= 0.0f)
-                            {
-                                UIManager.Instance.prestigeButtonDo(UIManager.Instance.mapSelect);
-                                prestigeCounter++;
-                                WaitAfterPrestige = 6.0f;
-                            }
+                            UIManager.Instance.prestigeButtonDo(UIManager.Instance.mapSelect);
+                            prestigeCounter++;
+                            WaitAfterPrestige = 6.0f;
                         }
+                    }
 
-                    }
-                    else if (GameManager.Instance.mPrestigesLevel < 3)
+                }
+                else if (GameManager.Instance.mPrestigesLevel < 3)
+                {
+                    WaitAfterPrestige -= Time.deltaTime;
+                    if (WaitAfterPrestige <= 0.0f)
                     {
-                        WaitAfterPrestige -= Time.deltaTime;
-                        if (WaitAfterPrestige <= 0.0f)
-                        {
-                            UIManager.Instance.prestigeButtonDo(UIManager.Instance.mapSelect);
-                            prestigeCounter++;
-                            WaitAfterPrestige = 6.0f;
-                        }
-                    }
-                    else if (GameManager.Instance.statCurrRunWavesFailed > 0)
-                    {
-                        WaitAfterPrestige -= Time.deltaTime;
-                        if (WaitAfterPrestige <= 0.0f)
-                        {
-                            UIManager.Instance.prestigeButtonDo(UIManager.Instance.mapSelect);
-                            prestigeCounter++;
-                            WaitAfterPrestige = 6.0f;
-                        }
+                        UIManager.Instance.prestigeButtonDo(UIManager.Instance.mapSelect);
+                        prestigeCounter++;
+                        WaitAfterPrestige = 6.0f;
                     }
                 }
+                else if (GameManager.Instance.statCurrRunWavesFailed > 0)
+                {
+                    WaitAfterPrestige -= Time.deltaTime;
+                    if (WaitAfterPrestige <= 0.0f)
+                    {
+                        UIManager.Instance.prestigeButtonDo(UIManager.Instance.mapSelect);
+                        prestigeCounter++;
+                        WaitAfterPrestige = 6.0f;
+                    }
+                }
+                
             }
         }
+
         public void GetNextFlyingChestReward()
         {
             if (currentReward != GameManager.Instance.videoAdRotation)
@@ -336,17 +335,16 @@ namespace AutoIdle
             }
 
         }
+
         public void AutoLayout()
         {
-            if (AutoLoadLayoutToggle)
+            if (AutoLoadLayoutToggle && TowerManager.Instance.usePlacements[0].thisTower == null)
             {
-                if (TowerManager.Instance.usePlacements[0].thisTower == null)
-                {
-                    LayoutPanel layoutPanel = UIManager.Instance.layoutsPanel.GetComponent<LayoutPanel>();
-                    layoutPanel.loadMapLayout(SelectedLayout);
-                }
+                LayoutPanel layoutPanel = UIManager.Instance.layoutsPanel.GetComponent<LayoutPanel>();
+                layoutPanel.loadMapLayout(SelectedLayout);
             }
         }
+
         public void CheckAutoBuy()
         {
             if (AutoBuyMonsterToggle)
@@ -365,6 +363,7 @@ namespace AutoIdle
                 }
             }
         }
+
         public void BuyMonster()
         {
             MonstersNewPanel monstersNewPanel = UIManager.Instance.monstersNewPanel.GetComponent<MonstersNewPanel>();
@@ -509,25 +508,22 @@ namespace AutoIdle
             monstersNewPanel.newCardPanel.gameObject.SetActive(false);
             monstersNewPanel.newCardMultiPanel.gameObject.SetActive(false);
         }
+
         public void KeepBossRushEnabled()
         {
-            if (KeepBossRushEnabledToggle)
+            if (KeepBossRushEnabledToggle && !UIManager.Instance.bossRushActive)
             {
-                if (!UIManager.Instance.bossRushActive)
-                {
-                    UIManager.Instance.clickedBossRushButton();
-                }
+                UIManager.Instance.clickedBossRushButton();
             }
         }
+
         public void AutoCargoShip()
         {
-            if (AutoCargoShipToggle)
+            if (AutoCargoShipToggle && UIManager.Instance.ccHudButtonText.text == "Ready!" && GameManager.Instance.mCargoKillsLevel < 3)
             {
-                if (UIManager.Instance.ccHudButtonText.text == "Ready!" && GameManager.Instance.mCargoKillsLevel < 3)
-                {
-                    UIManager.Instance.cargoCarrierPlay();
-                }
+                UIManager.Instance.cargoCarrierPlay();
             }
         }
+
     }
 }
