@@ -6,12 +6,11 @@ namespace AutoIdle
 {
     class Main : MonoBehaviour
     {
+        // GUI stuff
+        public Rect windowRect = new Rect(20, 20, 300, 700);
         private Vector2 scrollViewVector = Vector2.zero;
         public static string[] TierSelection = { "Tier1", "Tier2", "Tier3", "Tier4", "Tier5", "Tier6", "Tier7", };
         bool show = false;
-
-        // GUI stuff
-        public Rect windowRect = new Rect(20, 20, 300, 700);
 
         // Information Variables
         public int prestigeCounter = 0;
@@ -31,7 +30,7 @@ namespace AutoIdle
         public bool BuyOnlyNeededToggle;
         public bool AutoClickFlyingChest;
 
-        // Help Variables
+        // Info Variables
         public float WaitAfterPrestige;
         public int currentReward = GameManager.Instance.videoAdRotation;
         public string test1;
@@ -159,8 +158,8 @@ namespace AutoIdle
             GUI.Label(new Rect(information.x, information.y + 20, windowRect.width - 20, 25), "Flying Chest Clicked: " + flyingChestClickedCounter.ToString());
             GUI.Label(new Rect(information.x, information.y + 40, windowRect.width - 20, 25), "Next Chest Reward: " + nextFlyingChestReward);
             GUI.Label(new Rect(information.x, information.y + 60, windowRect.width - 20, 25), "Prestiges Done: " + prestigeCounter.ToString());
-            GUI.Label(new Rect(information.x, information.y + 80, windowRect.width - 20, 25), test1);
-            GUI.Label(new Rect(information.x, information.y + 100, windowRect.width - 20, 25), test2);
+            GUI.Label(new Rect(information.x, information.y + 80, windowRect.width - 20, 25), "Times leveled: " + LevelCounter);
+            GUI.Label(new Rect(information.x, information.y + 100, windowRect.width - 20, 25), test1);
             GUI.Label(new Rect(information.x, information.y + 120, windowRect.width - 20, 25), test3);
             GUI.Label(new Rect(information.x, information.y + 140, windowRect.width - 20, 25), test4);
 
@@ -194,6 +193,7 @@ namespace AutoIdle
         {
             double highestDps = 0;
             Tower highestDpsTower = TowerManager.Instance.usePlacements[0].thisTower;
+            Tower secondTower = TowerManager.Instance.usePlacements[0].thisTower;
             for (int i = 0; i < TowerManager.Instance.usePlacements.Count; i++)
             {
                 Tower thisTower = TowerManager.Instance.usePlacements[i].thisTower;
@@ -205,20 +205,26 @@ namespace AutoIdle
                     currHighestDps = highestDps;
                 }
             }
-            if (highestDpsTower.levelCost < GameManager.Instance.resGoldObs)
+            highestDps = 0;
+            for (int i = 0; i < TowerManager.Instance.usePlacements.Count; i++)
             {
-
+                Tower thisTower = TowerManager.Instance.usePlacements[i].thisTower;
+                if (thisTower.getDps(true, false, thisTower.baseDps, thisTower.milestoneBonus) > highestDps && thisTower.subClass.element != highestDpsTower.subClass.element)
+                {
+                    secondTower = thisTower;
+                    test1 = "second tower: " + secondTower.name;
+                }
             }
-            if (highestDpsTower == null)
+            if (secondTower.levelCost < GameManager.Instance.resGoldObs)
             {
-                test1 = "There's no tower...";
+                TowerManager.Instance.selectedTower = secondTower;
+                TowerManager.Instance.selectedTowerPanel.SetActive(true);
+                TowerUpgradePanel towerUpgradePanel = TowerManager.Instance.selectedTowerPanel.GetComponent<TowerUpgradePanel>();
+                towerUpgradePanel.clickedLevelButton();
+                TowerManager.Instance.selectedTowerPanel.SetActive(false);
+                TowerManager.Instance.selectedTower = null;
+                LevelCounter++;
             }
-            /*
-            test1 = "Highest DPS Tower: " + highestDpsTower.name;
-            test2 = "Cost to Level: " + highestDpsTower.levelCost.ToString();
-            test3 = "Gold: " + GameManager.Instance.resGoldObs.ToString();
-            test4 = "Times leveled: " + LevelCounter;
-            */
             if (highestDpsTower.levelCost < GameManager.Instance.resGoldObs)
             {
                 TowerManager.Instance.selectedTower = highestDpsTower;
