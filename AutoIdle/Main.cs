@@ -19,16 +19,18 @@ namespace AutoIdle
 
         // Setting Variables
         public bool windowOpen = false;
-        public bool AutoLoadLayoutToggle;
+        public bool AutoLoadLayoutToggle = true;
         public int SelectedLayout = 1;
-        public bool KeepBossRushEnabledToggle;
-        public bool AutoPrestigeToggle;
-        public bool FastPrestigeToggle;
-        public bool AutoDroneSwarmToggle;
-        public bool AutoBuyMonsterToggle;
+        public bool KeepBossRushEnabledToggle = true;
+        public bool AutoPrestigeToggle = true;
+        public bool FastPrestigeToggle = false;
+        public bool AutoDroneSwarmToggle = true;
+        public bool AutoBuyMonsterToggle = true;
         public int SelectedTier = 3;
-        public bool BuyOnlyNeededToggle;
-        public bool AutoClickFlyingChest;
+        public bool BuyOnlyNeededToggle = true;
+        public bool AutoClickFlyingChest = true;
+        public bool AutoLevelTwoTowersToggle = true;
+        public bool AutoCargoShipToggle = true;
 
         // Info Variables
         public float WaitAfterPrestige;
@@ -45,7 +47,7 @@ namespace AutoIdle
         }
         public void Update()
         {
-            ClickFlyingChest();
+            
             Cursor.visible = true;
             if (Input.GetKeyDown(KeyCode.U))
             {
@@ -57,25 +59,15 @@ namespace AutoIdle
                 Cursor.visible = true;
                 Loader.Unload();
             }
-            if (KeepBossRushEnabledToggle)
-            {
-                if (!UIManager.Instance.bossRushActive)
-                {
-                    UIManager.Instance.clickedBossRushButton();
-                }
-            }
-            if (AutoPrestigeToggle)
-            {
-                CheckPrestige();
-            }
+            // Good stuff
+            ClickFlyingChest();
+            CheckPrestige();
+            KeepBossRushEnabled();
             CheckDroneSwarm();
             CheckAutoBuy();
             AutoLayout();
             LevelUpHighestDPS();
-            if (UIManager.Instance.ccHudButtonText.text == "Ready!" && GameManager.Instance.mCargoKillsLevel < 3)
-            {
-                UIManager.Instance.cargoCarrierPlay();
-            }
+            
         }
         public void OnGUI()
         {
@@ -114,7 +106,6 @@ namespace AutoIdle
             FastPrestigeToggle = GUI.Toggle(new Rect(settings.x, settings.y + 90, windowRect.width - 20, 20), FastPrestigeToggle, "Enable Fast Prestige");
             AutoDroneSwarmToggle = GUI.Toggle(new Rect(settings.x, settings.y + 110, windowRect.width - 20, 20), AutoDroneSwarmToggle, "Auto Drone Swarm");
             AutoBuyMonsterToggle = GUI.Toggle(new Rect(settings.x, settings.y + 130, windowRect.width - 20, 20), AutoBuyMonsterToggle, "Auto Buy Monster");
-            BuyOnlyNeededToggle = GUI.Toggle(new Rect(settings.x, settings.y + 175, windowRect.width - 20, 20), BuyOnlyNeededToggle, "Only Buy Monster for Daily");
             Rect dropDownRect = new Rect(settings.x + 100, settings.y + 150, 125, 300);
             if (GUI.Button(new Rect((dropDownRect.x - 100), dropDownRect.y, dropDownRect.width, 25), ""))
             {
@@ -153,7 +144,9 @@ namespace AutoIdle
                 GUI.Label(new Rect((dropDownRect.x - 95), dropDownRect.y, 300, 25), TierSelection[SelectedTier]);
             }
             AutoClickFlyingChest = GUI.Toggle(new Rect(settings.x, settings.y + 195, windowRect.width - 20, 20), AutoClickFlyingChest, "Auto Click Flying Chest");
-            Rect information = new Rect(10, 250, windowRect.width - 20, 300);
+            AutoLevelTwoTowersToggle = GUI.Toggle(new Rect(settings.x, settings.y + 215, windowRect.width - 20, 20), AutoLevelTwoTowersToggle, "Auto Level Two Towers");
+            AutoCargoShipToggle = GUI.Toggle(new Rect(settings.x, settings.y + 235, windowRect.width - 20, 20), AutoCargoShipToggle, "Auto Cargo Ship");
+            Rect information = new Rect(10, 270, windowRect.width - 20, 300);
             GUI.Label(new Rect(information.x, information.y, windowRect.width - 20, 25), "Information:");
             GUI.Label(new Rect(information.x, information.y + 20, windowRect.width - 20, 25), "Flying Chest Clicked: " + flyingChestClickedCounter.ToString());
             GUI.Label(new Rect(information.x, information.y + 40, windowRect.width - 20, 25), "Next Chest Reward: " + nextFlyingChestReward);
@@ -191,49 +184,52 @@ namespace AutoIdle
         }
         public void LevelUpHighestDPS()
         {
-            double highestDps = 0;
-            Tower highestDpsTower = TowerManager.Instance.usePlacements[0].thisTower;
-            Tower secondTower = TowerManager.Instance.usePlacements[0].thisTower;
-            for (int i = 0; i < TowerManager.Instance.usePlacements.Count; i++)
+            if (AutoLevelTwoTowersToggle)
             {
-                Tower thisTower = TowerManager.Instance.usePlacements[i].thisTower;
+                double highestDps = 0;
+                Tower highestDpsTower = TowerManager.Instance.usePlacements[0].thisTower;
+                Tower secondTower = TowerManager.Instance.usePlacements[0].thisTower;
+                for (int i = 0; i < TowerManager.Instance.usePlacements.Count; i++)
+                {
+                    Tower thisTower = TowerManager.Instance.usePlacements[i].thisTower;
 
-                if (thisTower.getDps(true, false, thisTower.baseDps, thisTower.milestoneBonus) > highestDps)
-                {
-                    highestDps = thisTower.getDps(true, false, thisTower.baseDps, thisTower.milestoneBonus);
-                    highestDpsTower = thisTower;
-                    currHighestDps = highestDps;
+                    if (thisTower.getDps(true, false, thisTower.baseDps, thisTower.milestoneBonus) > highestDps)
+                    {
+                        highestDps = thisTower.getDps(true, false, thisTower.baseDps, thisTower.milestoneBonus);
+                        highestDpsTower = thisTower;
+                        currHighestDps = highestDps;
+                    }
                 }
-            }
-            highestDps = 0;
-            for (int i = 0; i < TowerManager.Instance.usePlacements.Count; i++)
-            {
-                Tower thisTower = TowerManager.Instance.usePlacements[i].thisTower;
-                if (thisTower.getDps(true, false, thisTower.baseDps, thisTower.milestoneBonus) > highestDps && thisTower.subClass.element != highestDpsTower.subClass.element)
+                highestDps = 0;
+                for (int i = 0; i < TowerManager.Instance.usePlacements.Count; i++)
                 {
-                    secondTower = thisTower;
-                    test1 = "second tower: " + secondTower.name;
+                    Tower thisTower = TowerManager.Instance.usePlacements[i].thisTower;
+                    if (thisTower.getDps(true, false, thisTower.baseDps, thisTower.milestoneBonus) > highestDps && thisTower.subClass.element != highestDpsTower.subClass.element)
+                    {
+                        highestDps = thisTower.getDps(true, false, thisTower.baseDps, thisTower.milestoneBonus);
+                        secondTower = thisTower;
+                    }
                 }
-            }
-            if (secondTower.levelCost < GameManager.Instance.resGoldObs)
-            {
-                TowerManager.Instance.selectedTower = secondTower;
-                TowerManager.Instance.selectedTowerPanel.SetActive(true);
-                TowerUpgradePanel towerUpgradePanel = TowerManager.Instance.selectedTowerPanel.GetComponent<TowerUpgradePanel>();
-                towerUpgradePanel.clickedLevelButton();
-                TowerManager.Instance.selectedTowerPanel.SetActive(false);
-                TowerManager.Instance.selectedTower = null;
-                LevelCounter++;
-            }
-            if (highestDpsTower.levelCost < GameManager.Instance.resGoldObs)
-            {
-                TowerManager.Instance.selectedTower = highestDpsTower;
-                TowerManager.Instance.selectedTowerPanel.SetActive(true);
-                TowerUpgradePanel towerUpgradePanel = TowerManager.Instance.selectedTowerPanel.GetComponent<TowerUpgradePanel>();
-                towerUpgradePanel.clickedLevelButton();
-                TowerManager.Instance.selectedTowerPanel.SetActive(false);
-                TowerManager.Instance.selectedTower = null;
-                LevelCounter++;
+                if (secondTower.levelCost < GameManager.Instance.resGoldObs)
+                {
+                    TowerManager.Instance.selectedTower = secondTower;
+                    TowerManager.Instance.selectedTowerPanel.SetActive(true);
+                    TowerUpgradePanel towerUpgradePanel = TowerManager.Instance.selectedTowerPanel.GetComponent<TowerUpgradePanel>();
+                    towerUpgradePanel.clickedLevelButton();
+                    TowerManager.Instance.selectedTowerPanel.SetActive(false);
+                    TowerManager.Instance.selectedTower = null;
+                    LevelCounter++;
+                }
+                if (highestDpsTower.levelCost < GameManager.Instance.resGoldObs)
+                {
+                    TowerManager.Instance.selectedTower = highestDpsTower;
+                    TowerManager.Instance.selectedTowerPanel.SetActive(true);
+                    TowerUpgradePanel towerUpgradePanel = TowerManager.Instance.selectedTowerPanel.GetComponent<TowerUpgradePanel>();
+                    towerUpgradePanel.clickedLevelButton();
+                    TowerManager.Instance.selectedTowerPanel.SetActive(false);
+                    TowerManager.Instance.selectedTower = null;
+                    LevelCounter++;
+                }
             }
         }
         public void ClickFlyingChest()
@@ -254,18 +250,32 @@ namespace AutoIdle
         }
         public void CheckPrestige()
         {
-            if (GameManager.Instance.currHighestWave >= GameManager.Instance.prestigeReqWave)
+            if (AutoPrestigeToggle)
             {
-                if (FastPrestigeToggle)
+                if (GameManager.Instance.currHighestWave >= GameManager.Instance.prestigeReqWave)
                 {
-                    double num = GameManager.Instance.baseEnemyHp;
-                    num *= (double)(1f - (float)GameManager.Instance.resLvlEnemyHp * 0.02f);
-                    num *= (double)(1f - (float)GameManager.Instance.artEnemyHp * 0.05f);
-                    num *= (double)(1f - (float)GameManager.Instance.relicEnemyHp * 0.02f);
-                    num *= (double)(1f - (float)GameManager.Instance.tournEnemyHp * 0.02f);
-                    num = Math.Round(num, 0);
-                    double num2 = currHighestDps;
-                    if (num * 2 > num2 || GameManager.Instance.statCurrRunWavesFailed > 0)
+                    if (FastPrestigeToggle)
+                    {
+                        double num = GameManager.Instance.baseEnemyHp;
+                        num *= (double)(1f - (float)GameManager.Instance.resLvlEnemyHp * 0.02f);
+                        num *= (double)(1f - (float)GameManager.Instance.artEnemyHp * 0.05f);
+                        num *= (double)(1f - (float)GameManager.Instance.relicEnemyHp * 0.02f);
+                        num *= (double)(1f - (float)GameManager.Instance.tournEnemyHp * 0.02f);
+                        num = Math.Round(num, 0);
+                        double num2 = currHighestDps;
+                        if (num * 2 > num2 || GameManager.Instance.statCurrRunWavesFailed > 0)
+                        {
+                            WaitAfterPrestige -= Time.deltaTime;
+                            if (WaitAfterPrestige <= 0.0f)
+                            {
+                                UIManager.Instance.prestigeButtonDo(UIManager.Instance.mapSelect);
+                                prestigeCounter++;
+                                WaitAfterPrestige = 6.0f;
+                            }
+                        }
+
+                    }
+                    else if (GameManager.Instance.mPrestigesLevel < 3)
                     {
                         WaitAfterPrestige -= Time.deltaTime;
                         if (WaitAfterPrestige <= 0.0f)
@@ -275,26 +285,15 @@ namespace AutoIdle
                             WaitAfterPrestige = 6.0f;
                         }
                     }
-                    
-                }
-                else if (GameManager.Instance.mPrestigesLevel < 3)
-                {
-                    WaitAfterPrestige -= Time.deltaTime;
-                    if (WaitAfterPrestige <= 0.0f)
+                    else if (GameManager.Instance.statCurrRunWavesFailed > 0)
                     {
-                        UIManager.Instance.prestigeButtonDo(UIManager.Instance.mapSelect);
-                        prestigeCounter++;
-                        WaitAfterPrestige = 6.0f;
-                    }
-                }
-                else if (GameManager.Instance.statCurrRunWavesFailed > 0)
-                {
-                    WaitAfterPrestige -= Time.deltaTime;
-                    if (WaitAfterPrestige <= 0.0f)
-                    {
-                        UIManager.Instance.prestigeButtonDo(UIManager.Instance.mapSelect);
-                        prestigeCounter++;
-                        WaitAfterPrestige = 6.0f;
+                        WaitAfterPrestige -= Time.deltaTime;
+                        if (WaitAfterPrestige <= 0.0f)
+                        {
+                            UIManager.Instance.prestigeButtonDo(UIManager.Instance.mapSelect);
+                            prestigeCounter++;
+                            WaitAfterPrestige = 6.0f;
+                        }
                     }
                 }
             }
@@ -509,6 +508,26 @@ namespace AutoIdle
             }
             monstersNewPanel.newCardPanel.gameObject.SetActive(false);
             monstersNewPanel.newCardMultiPanel.gameObject.SetActive(false);
+        }
+        public void KeepBossRushEnabled()
+        {
+            if (KeepBossRushEnabledToggle)
+            {
+                if (!UIManager.Instance.bossRushActive)
+                {
+                    UIManager.Instance.clickedBossRushButton();
+                }
+            }
+        }
+        public void AutoCargoShip()
+        {
+            if (AutoCargoShipToggle)
+            {
+                if (UIManager.Instance.ccHudButtonText.text == "Ready!" && GameManager.Instance.mCargoKillsLevel < 3)
+                {
+                    UIManager.Instance.cargoCarrierPlay();
+                }
+            }
         }
     }
 }
