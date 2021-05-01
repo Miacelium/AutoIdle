@@ -33,7 +33,7 @@ namespace AutoIdle
         public bool AutoLevelTwoTowersToggle = true;
         public bool AutoCargoShipToggle = true;
         public int SetTick = 100;
-        public string SetTickString = "33";
+        public bool DisableRenderingToggle = false;
 
         // Help Variables
         public float WaitAfterPrestige;
@@ -41,6 +41,9 @@ namespace AutoIdle
         public int LevelCounter = 0;
         public double currHighestDps;
         public int TickCount;
+        public float BenchmarkTimer;
+        public int TickCounter;
+        public int TickBenchmarkResult;
 
         public void Start()
         {
@@ -49,6 +52,7 @@ namespace AutoIdle
 
         public void Update()
         {
+            // BenchMark(); Just for funsies
             Cursor.visible = true;
             if (Input.GetKeyDown(KeyCode.U))
             {
@@ -75,7 +79,7 @@ namespace AutoIdle
 
         private void DoMyWindow(int windowID)
         {
-            Rect settings = new Rect(10, 10, windowRect.width - 20, 200);
+            Rect settings = new Rect(10, 10, windowRect.width - 20, 300);
             AutoLoadLayoutToggle = GUI.Toggle(new Rect(settings.x, settings.y + 10, windowRect.width - 20, 20), AutoLoadLayoutToggle, "Auto Load Layout: " + SelectedLayout);
             if (GUI.Button(new Rect(settings.x, settings.y + 30, (windowRect.width - 20) / 3, 20), "Layout 1"))
             {
@@ -135,14 +139,17 @@ namespace AutoIdle
             AutoClickFlyingChest = GUI.Toggle(new Rect(settings.x, settings.y + 195, windowRect.width - 20, 20), AutoClickFlyingChest, "Auto Click Flying Chest");
             AutoLevelTwoTowersToggle = GUI.Toggle(new Rect(settings.x, settings.y + 215, windowRect.width - 20, 20), AutoLevelTwoTowersToggle, "Auto Level Two Towers");
             AutoCargoShipToggle = GUI.Toggle(new Rect(settings.x, settings.y + 235, windowRect.width - 20, 20), AutoCargoShipToggle, "Auto Cargo Ship");
-            //GUI.TextField(new Rect(settings.x, settings.y + 235, windowRect.width - 20, 20), SetTickString, 33);
-            Rect information = new Rect(10, 270, windowRect.width - 20, 300);
+            DisableRenderingToggle = GUI.Toggle(new Rect(settings.x, settings.y + 255, windowRect.width - 20, 20), DisableRenderingToggle, "Disable Rendering");
+            GUI.Label(new Rect(settings.x, settings.y + 275, (windowRect.width - 20), 20), "Bot Tickrate: ");
+            SetTick = int.Parse(GUI.TextField(new Rect(settings.x + windowRect.width / 2, settings.y + 275, (windowRect.width - 20) / 2, 20), SetTick.ToString(), "33"));
+            Rect information = new Rect(10, settings.height + 70, windowRect.width - 20, 300);
             GUI.Label(new Rect(information.x, information.y, windowRect.width - 20, 25), "Information:");
             GUI.Label(new Rect(information.x, information.y + 20, windowRect.width - 20, 25), "Flying Chest Clicked: " + flyingChestClickedCounter.ToString());
             GUI.Label(new Rect(information.x, information.y + 40, windowRect.width - 20, 25), "Next Chest Reward: " + nextFlyingChestReward);
             GUI.Label(new Rect(information.x, information.y + 60, windowRect.width - 20, 25), "Prestiges Done: " + prestigeCounter.ToString());
             GUI.Label(new Rect(information.x, information.y + 80, windowRect.width - 20, 25), "Times leveled: " + LevelCounter);
             GUI.Label(new Rect(information.x, information.y + 100, windowRect.width - 20, 25), "Last Bought: " + lastBought);
+            // GUI.Label(new Rect(information.x, information.y + 120, windowRect.width - 20, 25), "Ticks Per Second: " + TickBenchmarkResult);
             GUI.DragWindow(new Rect(0, 0, 10000, 200));
         }
 
@@ -202,7 +209,7 @@ namespace AutoIdle
                     TowerManager.Instance.selectedTowerPanel.SetActive(false);
                     TowerManager.Instance.selectedTower = null;
                     LevelCounter++;
-                    DisableRendering(); // for funsies
+                    DisableRendering();
                 }
                 double highestDpsTowerCost;
                 if (highestDpsTower.level + 1 != highestDpsTower.milestoneLevel * 25)
@@ -222,7 +229,7 @@ namespace AutoIdle
                     TowerManager.Instance.selectedTowerPanel.SetActive(false);
                     TowerManager.Instance.selectedTower = null;
                     LevelCounter++;
-                    DisableRendering(); // for funsies
+                    DisableRendering();
                 }
             }
         }
@@ -334,7 +341,7 @@ namespace AutoIdle
             {
                 LayoutPanel layoutPanel = UIManager.Instance.layoutsPanel.GetComponent<LayoutPanel>();
                 layoutPanel.loadMapLayout(SelectedLayout);
-                DisableRendering(); // for funsies
+                DisableRendering();
             }
         }
 
@@ -551,40 +558,43 @@ namespace AutoIdle
 
         public void DisableRendering()
         {
-            GameObject[] allGameObjects = FindObjectsOfType<GameObject>();
-            foreach (GameObject gameObject in allGameObjects)
+            if (DisableRenderingToggle)
             {
-                if (!gameObject.activeInHierarchy)
+                GameObject[] allGameObjects = FindObjectsOfType<GameObject>();
+                foreach (GameObject gameObject in allGameObjects)
                 {
-                    continue;
-                }
-                if (gameObject.GetComponent<Renderer>())
-                {
-                    gameObject.GetComponent<Renderer>().enabled = false;
-                }
-                if (gameObject.GetComponent<BillboardRenderer>())
-                {
-                    gameObject.GetComponent<BillboardRenderer>().enabled = false;
-                }
-                if (gameObject.GetComponent<LineRenderer>())
-                {
-                    gameObject.GetComponent<LineRenderer>().enabled = false;
-                }
-                if (gameObject.GetComponent<MeshRenderer>())
-                {
-                    gameObject.GetComponent<MeshRenderer>().enabled = false;
-                }
-                if (gameObject.GetComponent<SkinnedMeshRenderer>())
-                {
-                    gameObject.GetComponent<SkinnedMeshRenderer>().enabled = false;
-                }
-                if (gameObject.GetComponent<SpriteRenderer>())
-                {
-                    gameObject.GetComponent<SpriteRenderer>().enabled = false;
-                }
-                if (gameObject.GetComponent<TrailRenderer>())
-                {
-                    gameObject.GetComponent<TrailRenderer>().enabled = false;
+                    if (!gameObject.activeInHierarchy)
+                    {
+                        continue;
+                    }
+                    if (gameObject.GetComponent<Renderer>())
+                    {
+                        gameObject.GetComponent<Renderer>().enabled = false;
+                    }
+                    if (gameObject.GetComponent<BillboardRenderer>())
+                    {
+                        gameObject.GetComponent<BillboardRenderer>().enabled = false;
+                    }
+                    if (gameObject.GetComponent<LineRenderer>())
+                    {
+                        gameObject.GetComponent<LineRenderer>().enabled = false;
+                    }
+                    if (gameObject.GetComponent<MeshRenderer>())
+                    {
+                        gameObject.GetComponent<MeshRenderer>().enabled = false;
+                    }
+                    if (gameObject.GetComponent<SkinnedMeshRenderer>())
+                    {
+                        gameObject.GetComponent<SkinnedMeshRenderer>().enabled = false;
+                    }
+                    if (gameObject.GetComponent<SpriteRenderer>())
+                    {
+                        gameObject.GetComponent<SpriteRenderer>().enabled = false;
+                    }
+                    if (gameObject.GetComponent<TrailRenderer>())
+                    {
+                        gameObject.GetComponent<TrailRenderer>().enabled = false;
+                    }
                 }
             }
         }
@@ -607,5 +617,16 @@ namespace AutoIdle
             }
         }
 
+        public void BenchMark()
+        {
+            TickCounter++;
+            BenchmarkTimer -= Time.deltaTime;
+            if (BenchmarkTimer <= 0.0f)
+            {
+                TickBenchmarkResult = TickCounter;
+                TickCounter = 0;
+                BenchmarkTimer = 1.0f;
+            }
+        }
     }
 }
