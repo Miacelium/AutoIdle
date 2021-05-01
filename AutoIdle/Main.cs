@@ -16,6 +16,7 @@ namespace AutoIdle
         public int prestigeCounter = 0;
         public string nextFlyingChestReward;
         public int flyingChestClickedCounter = 0;
+        public string lastBought;
 
         // Setting Variables
         public bool windowOpen = false;
@@ -31,13 +32,15 @@ namespace AutoIdle
         public bool AutoClickFlyingChest = true;
         public bool AutoLevelTwoTowersToggle = true;
         public bool AutoCargoShipToggle = true;
+        public int SetTick = 100;
+        public string SetTickString = "33";
 
-        // Info Variables
+        // Help Variables
         public float WaitAfterPrestige;
         public int currentReward = GameManager.Instance.videoAdRotation;
         public int LevelCounter = 0;
         public double currHighestDps;
-        public string lastBought;
+        public int TickCount;
 
         public void Start()
         {
@@ -57,15 +60,7 @@ namespace AutoIdle
                 Cursor.visible = true;
                 Loader.Unload();
             }
-            // Good stuff
-            ClickFlyingChest();
-            CheckPrestige();
-            KeepBossRushEnabled();
-            CheckDroneSwarm();
-            CheckAutoBuy();
-            AutoLayout();
-            LevelUpHighestDPS();
-            AutoCargoShip();
+            UpdateBot();
         }
 
         public void OnGUI()
@@ -140,6 +135,7 @@ namespace AutoIdle
             AutoClickFlyingChest = GUI.Toggle(new Rect(settings.x, settings.y + 195, windowRect.width - 20, 20), AutoClickFlyingChest, "Auto Click Flying Chest");
             AutoLevelTwoTowersToggle = GUI.Toggle(new Rect(settings.x, settings.y + 215, windowRect.width - 20, 20), AutoLevelTwoTowersToggle, "Auto Level Two Towers");
             AutoCargoShipToggle = GUI.Toggle(new Rect(settings.x, settings.y + 235, windowRect.width - 20, 20), AutoCargoShipToggle, "Auto Cargo Ship");
+            //GUI.TextField(new Rect(settings.x, settings.y + 235, windowRect.width - 20, 20), SetTickString, 33);
             Rect information = new Rect(10, 270, windowRect.width - 20, 300);
             GUI.Label(new Rect(information.x, information.y, windowRect.width - 20, 25), "Information:");
             GUI.Label(new Rect(information.x, information.y + 20, windowRect.width - 20, 25), "Flying Chest Clicked: " + flyingChestClickedCounter.ToString());
@@ -206,6 +202,7 @@ namespace AutoIdle
                     TowerManager.Instance.selectedTowerPanel.SetActive(false);
                     TowerManager.Instance.selectedTower = null;
                     LevelCounter++;
+                    DisableRendering(); // for funsies
                 }
                 double highestDpsTowerCost;
                 if (highestDpsTower.level + 1 != highestDpsTower.milestoneLevel * 25)
@@ -225,6 +222,7 @@ namespace AutoIdle
                     TowerManager.Instance.selectedTowerPanel.SetActive(false);
                     TowerManager.Instance.selectedTower = null;
                     LevelCounter++;
+                    DisableRendering(); // for funsies
                 }
             }
         }
@@ -336,6 +334,7 @@ namespace AutoIdle
             {
                 LayoutPanel layoutPanel = UIManager.Instance.layoutsPanel.GetComponent<LayoutPanel>();
                 layoutPanel.loadMapLayout(SelectedLayout);
+                DisableRendering(); // for funsies
             }
         }
 
@@ -490,7 +489,8 @@ namespace AutoIdle
                             amount = 100 - GameManager.Instance.mMultiCardsValue;
                         }
                     }
-                    if (GameManager.Instance.achHighestWave >= 800) {
+                    if (GameManager.Instance.achHighestWave >= 800)
+                    {
                         if (amount > 0)
                         {
                             Reflection.SetField(monstersNewPanel, "MKOOAPHPNJJ", 125 * amount);
@@ -546,6 +546,64 @@ namespace AutoIdle
             if (AutoCargoShipToggle && UIManager.Instance.ccHudButtonText.text == "Ready!" && GameManager.Instance.mCargoKillsLevel < 3)
             {
                 UIManager.Instance.cargoCarrierPlay();
+            }
+        }
+
+        public void DisableRendering()
+        {
+            GameObject[] allGameObjects = FindObjectsOfType<GameObject>();
+            foreach (GameObject gameObject in allGameObjects)
+            {
+                if (!gameObject.activeInHierarchy)
+                {
+                    continue;
+                }
+                if (gameObject.GetComponent<Renderer>())
+                {
+                    gameObject.GetComponent<Renderer>().enabled = false;
+                }
+                if (gameObject.GetComponent<BillboardRenderer>())
+                {
+                    gameObject.GetComponent<BillboardRenderer>().enabled = false;
+                }
+                if (gameObject.GetComponent<LineRenderer>())
+                {
+                    gameObject.GetComponent<LineRenderer>().enabled = false;
+                }
+                if (gameObject.GetComponent<MeshRenderer>())
+                {
+                    gameObject.GetComponent<MeshRenderer>().enabled = false;
+                }
+                if (gameObject.GetComponent<SkinnedMeshRenderer>())
+                {
+                    gameObject.GetComponent<SkinnedMeshRenderer>().enabled = false;
+                }
+                if (gameObject.GetComponent<SpriteRenderer>())
+                {
+                    gameObject.GetComponent<SpriteRenderer>().enabled = false;
+                }
+                if (gameObject.GetComponent<TrailRenderer>())
+                {
+                    gameObject.GetComponent<TrailRenderer>().enabled = false;
+                }
+            }
+        }
+
+        public void UpdateBot()
+        {
+            TickCount++;
+            if (TickCount >= SetTick)
+            {
+                // Good stuff
+                ClickFlyingChest();
+                CheckPrestige();
+                KeepBossRushEnabled();
+                CheckDroneSwarm();
+                CheckAutoBuy();
+                AutoLayout();
+                LevelUpHighestDPS();
+                AutoCargoShip();
+                TickCount = 0;
             }
         }
 
